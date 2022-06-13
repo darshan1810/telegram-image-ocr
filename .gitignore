@@ -132,3 +132,4 @@ dmypy.json
 img/
 *session*
 *workspace*
+trigger_configs.json

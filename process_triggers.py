@@ -33,7 +33,6 @@ class TriggerConfig:
         return "{" + ",".join(map(str, [self.client, self.name, self.number, self.trigger, self.number, self.call, self.message])) + "}"
 
     async def run_trigger(self, text):
-        print(f"{self.trigger}")
         if re.search(self.trigger, text):
             await self.alert()
 
@@ -106,7 +105,6 @@ def load_trigger_config(telegram_client, filename, debug=False):
         with open(filename) as f:
             config = json.load(f)
             trigger_configs = list()
-            print(config)
             for user in config:
                 trigger_configs.append(TriggerConfig(telegram_client,
                                                      user.get('name'),

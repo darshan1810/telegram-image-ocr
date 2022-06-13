@@ -2,11 +2,9 @@ from concurrent.futures import process
 from telethon import TelegramClient, events
 from process_image import process_image
 from process_triggers import process_triggers, load_trigger_config
-import os
 import json
 import logging
 import asyncio
-import time
 
 IMG_DIR="./img/"
 
