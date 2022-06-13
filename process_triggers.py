@@ -7,7 +7,6 @@ import logging
 from telethon.tl.functions.phone import RequestCallRequest
 from telethon.tl.functions.messages import GetDhConfigRequest
 from telethon.tl.types import PhoneCallProtocol
-from collections import defaultdict
 
 URL = "https://cgifederal.secure.force.com/?country=India&language=English"
 MESSAGE = f"An appointment is available right now! Login {URL}"
@@ -30,7 +29,7 @@ class TriggerConfig:
         self.message = message
 
     def __str__(self):
-        return "{" + ",".join(map(str, [self.client, self.name, self.number, self.trigger, self.number, self.call, self.message])) + "}"
+        return f"{self.name}: ({self.number}), r'{self.trigger}', call={self.call}, message={self.message}"
 
     async def run_trigger(self, text):
         if re.search(self.trigger, text):
@@ -112,7 +111,7 @@ def load_trigger_config(telegram_client, filename, debug=False):
                                                      user.get('number'),
                                                      user.get('call'),
                                                      user.get('message')))
-            logging.info("Loaded config: " +
+            logging.info("Loaded config: \n" +
                          "\n".join(map(str, trigger_configs)))
             return trigger_configs
     except Exception as e:
