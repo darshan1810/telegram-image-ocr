@@ -31,20 +31,20 @@ class TriggerConfig:
     def __str__(self):
         return f"{self.name}: ({self.number}), r'{self.trigger}', call={self.call}, message={self.message}"
 
-    async def run_trigger(self, text):
+    async def run_trigger(self, text, photo_path):
         if re.search(self.trigger, text):
-            await self.alert()
+            await self.alert(photo_path)
 
-    async def alert(self):
+    async def alert(self, photo_path):
         if self.number is None:
             return
         if self.message:
-            await self.send_message()
+            await self.send_message(photo_path)
         if self.call:
             await self.dial_user()
 
-    async def send_message(self):
-        await self.client.send_message(self.number, f"Hello {self.name}! {MESSAGE}")
+    async def send_message(self, photo_path):
+        await self.client.send_message(self.number, f"Hello {self.name}! {MESSAGE}", file=photo_path)
 
     async def dial_user(self):
         async def get_dh_config():
@@ -94,9 +94,9 @@ class TriggerConfig:
         )
 
 
-async def process_triggers(text, trigger_configs):
+async def process_triggers(text, photo_path, trigger_configs):
     for trigger_config in trigger_configs:
-        await trigger_config.run_trigger(text)
+        await trigger_config.run_trigger(text, photo_path)
 
 
 def load_trigger_config(telegram_client, filename, debug=False):

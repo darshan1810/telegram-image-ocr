@@ -133,3 +133,5 @@ img/
 *session*
 *workspace*
 trigger_configs.json
+
+.secrets

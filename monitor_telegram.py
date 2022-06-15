@@ -26,7 +26,7 @@ async def work(client, trigger_config_filename):
                 photo = await message.download_media(file=IMG_DIR)
                 text = process_image(photo)
                 logging.info(text)
-                await process_triggers(text, trigger_config)
+                await process_triggers(text, photo, trigger_config)
             logging.info(message.message)
         await client.run_until_disconnected()
 
