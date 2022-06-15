@@ -1,0 +1,23 @@
+[
+    {
+        "name": "Darshan",
+        "trigger": "November.{1,9}2022",
+        "number": "+123456891",
+        "message": true,
+        "call": true
+    },
+    {
+        "name": "Vada",
+        "trigger": "December.{1,9}2022",
+        "number": "+919911991199",
+        "message": true,
+        "call": true
+    },
+    {
+        "name": "Pav",
+        "trigger": "January.{1,9}2023",
+        "number": "+911212323212",
+        "message": true,
+        "call": true
+    }
+]
