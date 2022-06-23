@@ -20,20 +20,37 @@ logging.basicConfig(
 
 
 class TriggerConfig:
-    def __init__(self, telegram_client, name, trigger, number=None, call=None, message=None):
+    def __init__(self,
+                 telegram_client,
+                 name,
+                 trigger,
+                 number=None,
+                 call=None,
+                 message=None,
+                 check_visa_slots=None):
         self.client = telegram_client
         self.name = name
         self.trigger = trigger
         self.number = number
         self.call = call
         self.message = message
+        self.check_visa_slots = check_visa_slots
 
     def __str__(self):
-        return f"{self.name}: ({self.number}), r'{self.trigger}', call={self.call}, message={self.message}"
+        return f"{self.name}: ({self.number}), r'{self.trigger}', call={self.call}, message={self.message}, check-visa-slots={self.check_visa_slots}"
 
-    async def run_trigger(self, text, photo_path):
+    async def run_ocr_trigger(self, text, photo_path):
         if re.search(self.trigger, text):
             await self.alert(photo_path)
+
+    async def run_cvs_trigger(self, text):
+        if text == "":
+            return
+        if self.number is None:
+            return
+        if self.check_visa_slots and self.message:
+            message = f"Hello {self.name}! {MESSAGE}\nSource checkvisaslots.com:\n{text}"
+            await self.client.send_message(self.number, message, parse_mode='md')
 
     async def alert(self, photo_path):
         if self.number is None:
@@ -94,9 +111,14 @@ class TriggerConfig:
         )
 
 
-async def process_triggers(text, photo_path, trigger_configs):
+async def process_ocr_triggers(text, photo_path, trigger_configs):
     for trigger_config in trigger_configs:
-        await trigger_config.run_trigger(text, photo_path)
+        await trigger_config.run_ocr_trigger(text, photo_path)
+
+
+async def process_check_visa_slot_triggers(text, trigger_configs):
+    for trigger_config in trigger_configs:
+        await trigger_config.run_cvs_trigger(text)
 
 
 def load_trigger_config(telegram_client, filename, debug=False):
@@ -110,7 +132,8 @@ def load_trigger_config(telegram_client, filename, debug=False):
                                                      user.get('trigger'),
                                                      user.get('number'),
                                                      user.get('call'),
-                                                     user.get('message')))
+                                                     user.get('message'),
+                                                     user.get('check-visa-slots')))
             logging.info("Loaded config: \n" +
                          "\n".join(map(str, trigger_configs)))
             return trigger_configs
