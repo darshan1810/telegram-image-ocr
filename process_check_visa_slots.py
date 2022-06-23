@@ -32,7 +32,7 @@ def process_check_visa_slots(access_token):
         for slot_details in json_response:
             slots = slot_details.get('slots')
             location = slot_details.get('visa_location').split()[-2]
-            if slots == 0:
+            if slots != 0:
                 logging.info(f"Found {slots} slots at {location}")
                 result.append(f"Found **{slots}** slots at **{location}**")
     return "\n".join(result)
