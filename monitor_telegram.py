@@ -27,7 +27,7 @@ async def telegram_monitor(client, trigger_config):
                 photo = await message.download_media(file=IMG_DIR)
                 text = process_image(photo)
                 logging.info(text)
-                await process_ocr_triggers(text, photo, trigger_config)
+                await process_ocr_triggers(text, message, trigger_config)
             logging.info(message.message)
         await client.run_until_disconnected()
 

@@ -39,9 +39,9 @@ class TriggerConfig:
     def __str__(self):
         return f"{self.name}: ({self.number}), r'{self.trigger}', call={self.call}, message={self.message}, check-visa-slots={self.check_visa_slots}"
 
-    async def run_ocr_trigger(self, text, photo_path):
+    async def run_ocr_trigger(self, text, message):
         if re.search(self.trigger, text):
-            await self.alert(photo_path)
+            await self.alert(message)
 
     async def run_cvs_trigger(self, text):
         if text == "":
@@ -52,16 +52,17 @@ class TriggerConfig:
             message = f"Hello {self.name}! {MESSAGE}\nSource checkvisaslots.com:\n{text}"
             await self.client.send_message(self.number, message, parse_mode='md')
 
-    async def alert(self, photo_path):
+    async def alert(self, message):
         if self.number is None:
             return
         if self.message:
-            await self.send_message(photo_path)
+            await self.send_message(message)
         if self.call:
             await self.dial_user()
 
-    async def send_message(self, photo_path):
-        await self.client.send_message(self.number, f"Hello {self.name}! {MESSAGE}", file=photo_path)
+    async def send_message(self, message):
+        await self.client.send_message(self.number, f"Hello {self.name}! {MESSAGE}")
+        await self.client.forward_messages(self.number, message)
 
     async def dial_user(self):
         async def get_dh_config():
@@ -111,9 +112,9 @@ class TriggerConfig:
         )
 
 
-async def process_ocr_triggers(text, photo_path, trigger_configs):
+async def process_ocr_triggers(text, message, trigger_configs):
     for trigger_config in trigger_configs:
-        await trigger_config.run_ocr_trigger(text, photo_path)
+        await trigger_config.run_ocr_trigger(text, message)
 
 
 async def process_check_visa_slot_triggers(text, trigger_configs):
