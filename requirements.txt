@@ -3,7 +3,7 @@ certifi==2023.7.22
 charset-normalizer==2.0.12
 idna==3.3
 packaging==21.3
-Pillow==10.0.1
+Pillow==10.2.0
 pyaes==1.6.1
 pyasn1==0.4.8
 pycodestyle==2.8.0
