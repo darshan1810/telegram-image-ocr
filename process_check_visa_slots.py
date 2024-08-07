@@ -1,10 +1,13 @@
 import json
 import requests
 import logging
+import pytz
+from datetime import datetime
 
-URL = "https://app.checkvisaslots.com/slots/v1"
+SLOTS_URL = "https://app.checkvisaslots.com/slots/v3"
 CHROME_EXT = "chrome-extension://beepaenfejnphdgnkmccjcfiieihhogl"
-UA = "user-agent:Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.67 Safari/537.36"
+UA = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36"
+VERSION = "4.5.5"
 
 logging.basicConfig(
     filename="logs.log",
@@ -14,29 +17,60 @@ logging.basicConfig(
 )
 
 
+def convert_to_pst(timestamp_string):
+  """Converts a GMT timestamp string to PST.
+
+  Args:
+    timestamp_string: The timestamp string in the format 'Wed, 07 Aug 2024 02:30:42 GMT'.
+
+  Returns:
+    The timestamp converted to PST as a datetime object.
+  """
+
+  # Parse the timestamp string into a datetime object with GMT timezone
+  gmt_datetime = datetime.strptime(timestamp_string, '%a, %d %b %Y %H:%M:%S GMT')
+  gmt_timezone = pytz.timezone('GMT')
+  gmt_aware_datetime = gmt_timezone.localize(gmt_datetime)
+
+  # Convert the datetime object to PST
+  pst_timezone = pytz.timezone('America/Los_Angeles')
+  pst_aware_datetime = gmt_aware_datetime.astimezone(pst_timezone)
+
+  # Format the PST datetime in 12h format
+  pst_datetime_str = pst_aware_datetime.strftime('%a, %d %b %Y %I:%M:%S %p')
+
+  return pst_datetime_str
+
+
+def check_consulate(results, consulate="CHENNAI"):
+    for result in results:
+        if consulate in result["visa_location"]:
+            return result["slots"], convert_to_pst(result["createdon"])
+
+
 def fetch_check_visa_slots(access_token):
-    headers = dict()
-    headers['origin'] = CHROME_EXT
-    headers['user-agent'] = UA
-    headers['x-api-key'] = access_token
-    response = requests.get(URL, headers=headers)
+    headers = {
+        'origin': CHROME_EXT,
+        'user-agent': UA,
+        'x-api-key': access_token,
+        'Extversion': VERSION,
+    }
+    response = requests.get(SLOTS_URL, headers=headers)
     if response.ok:
+        # print(response.text)
         return response.json()['slotDetails']
     return None
 
 
 def process_check_visa_slots(access_token):
     json_response = fetch_check_visa_slots(access_token)
-    result = []
     if json_response:
-        for slot_details in json_response:
-            slots = slot_details.get('slots')
-            location = slot_details.get('visa_location').split()[-2]
-            if slots != 0:
-                logging.info(f"Found {slots} slots at {location}")
-                result.append(f"Found **{slots}** slots at **{location}**")
-    return "\n".join(result)
+        slot_count, timestamp = check_consulate(json_response)
+        if slot_count != 0:
+            logging.info(f"Found {slot_count} slots at time: {timestamp}")
+            return f"Found **{slot_count}** slots at **{timestamp}**"
+    return None
 
 
 if __name__ == '__main__':
-    print(process_check_visa_slots("TOKEN"))
+    print(process_check_visa_slots("NBHZEV"))

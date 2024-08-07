@@ -8,8 +8,8 @@ from telethon.tl.functions.phone import RequestCallRequest
 from telethon.tl.functions.messages import GetDhConfigRequest
 from telethon.tl.types import PhoneCallProtocol
 
-URL = "https://cgifederal.secure.force.com/?country=India&language=English"
-MESSAGE = f"An appointment is available right now! Login {URL}"
+URL = "https://www.usvisascheduling.com/en-US/"
+MESSAGE = f"An appointment maybe available right now! Login {URL}"
 
 logging.basicConfig(
     filename="logs.log",
@@ -44,7 +44,7 @@ class TriggerConfig:
             await self.alert(message)
 
     async def run_cvs_trigger(self, text):
-        if text == "":
+        if text == "" or text is None:
             return
         if self.number is None:
             return
