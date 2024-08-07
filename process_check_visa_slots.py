@@ -38,7 +38,6 @@ def convert_to_pst(timestamp_string):
 
   # Format the PST datetime in 12h format
   pst_datetime_str = pst_aware_datetime.strftime('%a, %d %b %Y %I:%M:%S %p')
-
   return pst_datetime_str
 
 
@@ -57,7 +56,6 @@ def fetch_check_visa_slots(access_token):
     }
     response = requests.get(SLOTS_URL, headers=headers)
     if response.ok:
-        # print(response.text)
         return response.json()['slotDetails']
     return None
 
@@ -73,4 +71,4 @@ def process_check_visa_slots(access_token):
 
 
 if __name__ == '__main__':
-    print(process_check_visa_slots("NBHZEV"))
+    print(process_check_visa_slots("TOKEN"))
