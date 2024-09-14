@@ -62,7 +62,13 @@ class TriggerConfig:
 
     async def send_message(self, message):
         await self.client.send_message(self.number, f"Hello {self.name}! {MESSAGE}")
-        await self.client.forward_messages(self.number, message)
+        try:
+            await self.client.send_message(self.number, message)
+            await self.client.forward_messages(self.number, message)
+        except Exception as e:
+            logging.warning(f"Forwarding failed due to error={repr(e)}")
+            await self.client.send_message(self.number, f"Could not forward message.")
+
 
     async def dial_user(self):
         async def get_dh_config():
