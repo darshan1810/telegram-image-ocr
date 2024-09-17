@@ -39,9 +39,9 @@ class TriggerConfig:
     def __str__(self):
         return f"{self.name}: ({self.number}), r'{self.trigger}', call={self.call}, message={self.message}, check-visa-slots={self.check_visa_slots}"
 
-    async def run_ocr_trigger(self, text, message):
+    async def run_ocr_trigger(self, photo_path, text, message):
         if re.search(self.trigger, text):
-            await self.alert(message)
+            await self.alert(message, photo_path)
 
     async def run_cvs_trigger(self, text):
         if text == "" or text is None:
@@ -52,22 +52,24 @@ class TriggerConfig:
             message = f"Hello {self.name}! {MESSAGE}\nSource checkvisaslots.com:\n{text}"
             await self.client.send_message(self.number, message, parse_mode='md')
 
-    async def alert(self, message):
+    async def alert(self, message, photo_path=""):
         if self.number is None:
             return
         if self.message:
-            await self.send_message(message)
+            await self.send_message(message, photo_path)
         if self.call:
             await self.dial_user()
 
-    async def send_message(self, message):
+    async def send_message(self, message, photo_path=""):
         await self.client.send_message(self.number, f"Hello {self.name}! {MESSAGE}")
         try:
-            await self.client.send_message(self.number, message)
             await self.client.forward_messages(self.number, message)
         except Exception as e:
             logging.warning(f"Forwarding failed due to error={repr(e)}")
-            await self.client.send_message(self.number, f"Could not forward message.")
+            if photo_path != "":
+                await self.client.send_message(self.number, "Forwarding image:", file=photo_path)
+            else:
+                await self.client.send_message(self.number, f"Could not forward message.")
 
 
     async def dial_user(self):
@@ -118,9 +120,9 @@ class TriggerConfig:
         )
 
 
-async def process_ocr_triggers(text, message, trigger_configs):
+async def process_ocr_triggers(text, photo_path, message, trigger_configs):
     for trigger_config in trigger_configs:
-        await trigger_config.run_ocr_trigger(text, message)
+        await trigger_config.run_ocr_trigger(text, photo_path, message)
 
 
 async def process_check_visa_slot_triggers(text, trigger_configs):
