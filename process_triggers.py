@@ -41,7 +41,7 @@ class TriggerConfig:
 
     async def run_ocr_trigger(self, photo_path, text, message):
         if re.search(self.trigger, text):
-            await self.alert(message, photo_path=photo_path)
+            await self.alert(message, photo_path)
 
     async def run_cvs_trigger(self, text):
         if text == "" or text is None:
@@ -56,7 +56,7 @@ class TriggerConfig:
         if self.number is None:
             return
         if self.message:
-            await self.send_message(message, photo_path=photo_path)
+            await self.send_message(message, photo_path)
         if self.call:
             await self.dial_user()
 
@@ -66,7 +66,6 @@ class TriggerConfig:
             await self.client.forward_messages(self.number, message)
         except Exception as e:
             logging.warning(f"Forwarding failed due to error={repr(e)}")
-            logging.info(f"Will try manually forwarding image path='{photo_path}'")
             if photo_path != "":
                 await self.client.send_message(self.number, "Forwarding image:", file=photo_path)
             else:
