@@ -39,7 +39,7 @@ class TriggerConfig:
     def __str__(self):
         return f"{self.name}: ({self.number}), r'{self.trigger}', call={self.call}, message={self.message}, check-visa-slots={self.check_visa_slots}"
 
-    async def run_ocr_trigger(self, photo_path, text, message):
+    async def run_ocr_trigger(self, text, photo_path, message):
         if re.search(self.trigger, text):
             await self.alert(message, photo_path)
 
