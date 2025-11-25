@@ -20,19 +20,75 @@ This project has been **completely refactored** with a modular, extensible archi
 
 ## Setup
 
+### Option 1: Local Installation
+
 1. Install [tesseract](https://github.com/tesseract-ocr/tesseract#installing-tesseract)
-2. Install python packages `pip3 install -r requirements.txt`
-3. Get Telegram API credentials <https://my.telegram.org>, under API Development
-4. Create `session.conf` using `sample_session.conf`
-5. Create `trigger_configs.json` using `sample_trigger_configs.json`
-6. Run the program using `python3 monitor_telegram.py`
+2. Install python packages: `pip3 install -r requirements.txt`
+3. Get Telegram API credentials: https://my.telegram.org (API Development tab)
+4. Create `session.conf` from `sample_session.conf`
+5. Create `trigger_configs.json` from `sample_trigger_configs.json`
+6. Run: `python3 monitor_telegram.py`
+
+### Option 2: Docker (Recommended)
+
+**Install Docker Buildx (if not already installed):**
+```bash
+docker buildx version
+# If not installed, see: https://docs.docker.com/go/buildx/
+```
+
+**Build the image with Buildx:**
+```bash
+docker buildx build -t telegram-image-ocr --load .
+```
+
+Or use the legacy builder (deprecated but still works):
+```bash
+docker build -t telegram-image-ocr .
+```
+
+**Run the container:**
+```bash
+docker run -it \
+  -v $(pwd)/session.conf:/home/App/session.conf \
+  -v $(pwd)/trigger_configs.json:/home/App/trigger_configs.json \
+  -v $(pwd)/img:/img \
+  telegram-image-ocr
+```
+
+**Run in background:**
+```bash
+docker run -d \
+  --name telegram-ocr \
+  -v $(pwd)/session.conf:/home/App/session.conf \
+  -v $(pwd)/trigger_configs.json:/home/App/trigger_configs.json \
+  -v $(pwd)/img:/img \
+  telegram-image-ocr
+```
+
+**View logs:**
+```bash
+docker logs -f telegram-ocr
+```
+
+**Stop and remove container:**
+```bash
+docker stop telegram-ocr
+docker rm telegram-ocr
+```
+
+**Remove image:**
+```bash
+docker rmi telegram-image-ocr
+```
 
 ## 🎯 Quick Start
 
 ### Basic Usage
 
 ```python
-from monitor_telegram_v2 import TelegramMonitor
+from monitor_telegram import TelegramMonitor
+import asyncio
 
 monitor = TelegramMonitor(
     api_id=your_api_id,
@@ -89,7 +145,6 @@ monitor_telegram.py (Main)
 - **`INDEX.md`** - Complete documentation index
 - **`QUICK_START.md`** - Usage examples and patterns
 - **`OPTIMIZATION_GUIDE.md`** - Architecture and design
-- **`BEFORE_AFTER_COMPARISON.md`** - What changed and why
 - **`ARCHITECTURE.md`** - Detailed diagrams and flows
 
 ## 🔧 Extending the Code
@@ -146,9 +201,9 @@ telegram-image-ocr/
 │
 ├── Documentation
 │   ├── INDEX.md
+│   ├── README.md
 │   ├── QUICK_START.md
 │   ├── OPTIMIZATION_GUIDE.md
-│   ├── BEFORE_AFTER_COMPARISON.md
 │   └── ARCHITECTURE.md
 │
 ├── Config Files

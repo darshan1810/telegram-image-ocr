@@ -9,95 +9,44 @@ telegram-image-ocr/
 ├── trigger_config_loader.py        # ⭐ Config file loader
 ├── phone_call.py                   # ⭐ Phone call handling
 ├── alert_handlers.py               # ⭐ Alert mechanisms
-├── process_image_v2.py             # ⭐ Improved OCR
-├── process_check_visa_slots_v2.py  # ⭐ Visa checker
-├── monitor_telegram_v2.py          # ⭐ Main app
-├── OPTIMIZATION_GUIDE.md           # Detailed architecture
-├── BEFORE_AFTER_COMPARISON.md      # What changed & why
-├── README.md                       # Original README
-└── [original files]                # Backward compatible
+├── process_image.py                # ⭐ OCR processing
+├── process_check_visa_slots.py     # ⭐ Visa checker
+├── monitor_telegram.py             # ⭐ Main app
+├── README.md                       # Project overview
+├── QUICK_START.md                  # This file (usage examples)
+├── OPTIMIZATION_GUIDE.md           # Architecture details
+└── ARCHITECTURE.md                 # System design & diagrams
 ```
 
-## Option 1: Quick Replacement (Recommended)
+## Getting Started
 
-Simply use the v2 modules instead of originals:
-
-```bash
-# Backup originals (optional)
-mv monitor_telegram.py monitor_telegram.py.bak
-mv process_image.py process_image.py.bak
-mv process_check_visa_slots.py process_check_visa_slots.py.bak
-mv process_triggers.py process_triggers.py.bak
-
-# Rename v2 files to be primary
-mv monitor_telegram_v2.py monitor_telegram.py
-mv process_image_v2.py process_image.py
-mv process_check_visa_slots_v2.py process_check_visa_slots.py
-
-# Update imports in any custom code
-# (Old imports still work, but new imports recommended)
-```
-
-## Option 2: Gradual Migration
-
-Keep both old and new code, migrate gradually:
-
-```python
-# New project code
-from triggers import TriggerConfig, RegexTrigger, TriggerManager
-from alert_handlers import TelegramMessageHandler
-from phone_call import PhoneCallHandler
-import config
-
-# Old project code (still works)
-from process_triggers import load_trigger_config
-from process_image import process_image
-```
+You're ready to use the optimized code! All modules are already in place with the current names.
 
 ## Usage Examples
 
 ### 1. Setting up Logging
 
-**Before:**
-```python
-import logging
-logging.basicConfig(
-    filename="logs.log",
-    filemode='a',
-    format='%(asctime)s | %(levelname)s | %(message)s',
-    level=logging.INFO
-)
-```
-
-**After:**
 ```python
 import config
+
+# Setup logging and get logger
 logger = config.setup_logging()
-# or just use:
-logger = config.get_logger()
+logger.info("Application started")
+logger.error("Something went wrong")
 ```
 
 ---
 
 ### 2. Creating Trigger Configurations
 
-**Before:**
-```python
-from process_triggers import load_trigger_config
-
-# Had to use JSON files only
-configs = load_trigger_config(telegram_client, "trigger_configs.json")
-```
-
-**After:**
 ```python
 from triggers import TriggerConfig, RegexTrigger
 
-# Option A: From JSON (same as before)
+# Option A: From JSON file
 from trigger_config_loader import load_trigger_config
 configs = load_trigger_config(telegram_client, "trigger_configs.json")
 
-# Option B: Programmatic (new!)
+# Option B: Programmatic (custom triggers)
 trigger = RegexTrigger(r"November.*2024")
 config = TriggerConfig(
     name="John",
@@ -113,17 +62,8 @@ config = TriggerConfig(
 
 ### 3. Processing Images with OCR
 
-**Before:**
 ```python
 from process_image import process_image
-
-text = process_image("./img/photo.png")
-# Errors silently returned None
-```
-
-**After:**
-```python
-from process_image_v2 import process_image
 
 try:
     text = process_image("./img/photo.png")
@@ -131,24 +71,15 @@ try:
 except FileNotFoundError:
     print("Image not found")
 except Exception as e:
-    print(f"Error: {e}")
+    print(f"OCR Error: {e}")
 ```
 
 ---
 
 ### 4. Checking Visa Slots
 
-**Before:**
 ```python
-from process_check_visa_slots import process_check_visa_slots
-
-result = process_check_visa_slots(access_token)
-# Always used default "CHENNAI"
-```
-
-**After:**
-```python
-from process_check_visa_slots_v2 import VisaSlotsChecker
+from process_check_visa_slots import VisaSlotsChecker
 
 # Use default consulate
 checker = VisaSlotsChecker()
@@ -157,30 +88,12 @@ result = checker.check_slots(access_token)
 # Or specify custom consulate
 checker = VisaSlotsChecker(consulate="MUMBAI")
 result = checker.check_slots(access_token)
-
-# Fine-grained control
-slots, timestamp = checker._find_consulate_slots(data)
 ```
 
 ---
 
 ### 5. Sending Alerts
 
-**Before:**
-```python
-# Complex TriggerConfig logic mixed in
-trigger_config = TriggerConfig(
-    telegram_client=client,
-    name="John",
-    trigger=r"pattern",
-    number="+1234567890",
-    message=True,
-    call=True
-)
-# Then await trigger_config.alert(message, photo_path)
-```
-
-**After:**
 ```python
 from alert_handlers import TelegramMessageHandler, TelegramForwardHandler
 from phone_call import PhoneCallHandler
@@ -190,7 +103,7 @@ msg_handler = TelegramMessageHandler(client)
 fwd_handler = TelegramForwardHandler(client)
 call_handler = PhoneCallHandler(client)
 
-# Use independently
+# Send message alert
 await msg_handler.send_alert(
     recipient="+1234567890",
     title="Alert!",
@@ -198,12 +111,14 @@ await msg_handler.send_alert(
     photo_path="./img/photo.png"
 )
 
+# Forward message
 await fwd_handler.send_alert(
     recipient="+1234567890",
     title="Forwarded:",
     message=telegram_message_object
 )
 
+# Make phone call
 success = await call_handler.call_user("+1234567890")
 ```
 
@@ -222,14 +137,11 @@ async def main():
     trigger_config = load_trigger_config(telegram_client, "trigger_configs.json")
     
     bg_task = asyncio.create_task(check_visa_slots_monitor(...))
-    await telegram_monitor(telegram_client, trigger_config)
+### 6. Running the Main Application
 
-asyncio.run(main())
-```
-
-**After:**
 ```python
-from monitor_telegram_v2 import TelegramMonitor
+from monitor_telegram import TelegramMonitor
+import asyncio
 
 async def main():
     # Configuration is loaded by TelegramMonitor
@@ -246,11 +158,14 @@ async def main():
 asyncio.run(main())
 ```
 
+Or simply run:
+```bash
+python3 monitor_telegram.py
+```
+
 ---
 
 ### 7. Custom Trigger Type
-
-**New capability!**
 
 ```python
 from triggers import Trigger, TriggerConfig, TriggerManager
@@ -283,7 +198,20 @@ config = TriggerConfig(
 
 ### 8. Custom Alert Handler
 
-**New capability!**
+```python
+from alert_handlers import AlertHandler
+
+class SlackAlertHandler(AlertHandler):
+    def __init__(self, webhook_url):
+        self.webhook_url = webhook_url
+    
+    async def send_alert(self, recipient, title, message, photo_path=None):
+        # Your Slack webhook logic
+        return True
+
+handler = SlackAlertHandler("https://hooks.slack.com/...")
+await handler.send_alert("+123", "Alert", "Message")
+```**New capability!**
 
 ```python
 from alert_handlers import AlertHandler
@@ -365,6 +293,113 @@ Make sure all new modules are in the same directory:
 ls -la *.py | grep -E "(config|triggers|alert)"
 ```
 
+---
+
+## Docker Setup
+
+### Install Docker Buildx (Recommended)
+
+Docker Buildx is the modern builder that replaces the legacy builder:
+
+```bash
+# Check if buildx is installed
+docker buildx version
+
+# If not installed, see installation guide:
+# https://docs.docker.com/go/buildx/
+```
+
+### Build the Docker Image with Buildx (Recommended)
+
+```bash
+docker buildx build -t telegram-image-ocr --load .
+```
+
+**Note:** The `--load` flag loads the image into your local Docker daemon. Without it, buildx builds multi-platform images directly to a registry.
+
+### Build with Legacy Builder (Deprecated)
+
+If you don't have buildx installed yet:
+
+```bash
+docker build -t telegram-image-ocr .
+```
+
+⚠️ **Warning:** The legacy builder is deprecated and will be removed in a future release. Please install buildx.
+
+### Run Locally (Interactive)
+
+```bash
+docker run -it \
+  -v $(pwd)/session.conf:/home/App/session.conf \
+  -v $(pwd)/trigger_configs.json:/home/App/trigger_configs.json \
+  -v $(pwd)/img:/img \
+  telegram-image-ocr
+```
+
+### Run in Background
+
+```bash
+docker run -d --name telegram-ocr \
+  -v $(pwd)/session.conf:/home/App/session.conf \
+  -v $(pwd)/trigger_configs.json:/home/App/trigger_configs.json \
+  -v $(pwd)/img:/img \
+  telegram-image-ocr
+```
+
+### View Logs
+
+```bash
+docker logs -f telegram-ocr
+```
+
+### Stop and Remove
+
+```bash
+docker stop telegram-ocr
+docker rm telegram-ocr
+```
+
+### Clean Up
+
+```bash
+# Remove image
+docker rmi telegram-image-ocr
+
+# Remove all dangling images and containers
+docker system prune
+```
+
+### Multi-Platform Build (Advanced)
+
+Build for multiple architectures with buildx:
+
+```bash
+docker buildx build -t telegram-image-ocr \
+  --platform linux/amd64,linux/arm64 \
+  .
+```
+
+Then push to a registry:
+
+```bash
+docker buildx build -t your-registry/telegram-image-ocr \
+  --platform linux/amd64,linux/arm64 \
+  --push \
+  .
+```
+
+---
+
+## Troubleshooting
+
+### Module import errors
+
+Make sure all new modules are in the same directory:
+```bash
+ls -la *.py | grep -E "(config|triggers|alert)"
+```
+
 ### Config file not found
 
 Check path is correct:
@@ -394,15 +429,13 @@ python3 --version
 
 ## Next Steps
 
-1. **Backup Original Files** - Keep originals for reference
-2. **Test v2 Modules** - Run with new code in test environment
-3. **Update Main Script** - Switch to `monitor_telegram_v2.py`
+1. **Test Installation** - Run `python3 verify_setup.py`
+2. **Review Architecture** - Read `OPTIMIZATION_GUIDE.md`
+3. **Configure Settings** - Update `session.conf` and `trigger_configs.json`
 4. **Add Custom Logic** - Extend with custom triggers/handlers
-5. **Set up Tests** - Use pytest with new modular code
+5. **Deploy** - Use Docker or local installation
+6. **Monitor** - Watch logs with `tail -f logs.log`
 
-## Getting Help
+---
 
-- Read `OPTIMIZATION_GUIDE.md` for architecture details
-- Check `BEFORE_AFTER_COMPARISON.md` for migration help
-- Review docstrings in each module: `python -m pydoc config`
-- Look at examples in `if __name__ == '__main__'` blocks
+**Questions?** Check `ARCHITECTURE.md` for system design or review module docstrings.

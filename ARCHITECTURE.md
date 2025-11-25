@@ -6,49 +6,51 @@
 telegram-image-ocr/
 │
 ├── 📋 Configuration & Setup
-│   ├── config.py                      ⭐ NEW - Centralized config & logging
-│   ├── trigger_config_loader.py       ⭐ NEW - Load trigger configs from JSON
-│   ├── session.conf                   (unchanged)
-│   ├── trigger_configs.json           (unchanged)
-│   └── sample_*.conf                  (unchanged)
+│   ├── config.py                      ⭐ Centralized config & logging
+│   ├── trigger_config_loader.py       ⭐ Load trigger configs from JSON
+│   ├── session.conf
+│   ├── trigger_configs.json
+│   └── sample_*.conf
 │
 ├── 🎯 Core Trigger System
-│   ├── triggers.py                    ⭐ NEW - Trigger framework & manager
-│   └── trigger_config_loader.py       (already listed above)
+│   └── triggers.py                    ⭐ Trigger framework & manager
 │
 ├── 🔔 Alert System
-│   └── alert_handlers.py              ⭐ NEW - Alert handler base class
+│   └── alert_handlers.py              ⭐ Alert handler base class
 │
 ├── 📞 Phone System
-│   └── phone_call.py                  ⭐ NEW - DH-based calling logic
+│   └── phone_call.py                  ⭐ DH-based calling logic
 │
 ├── 🖼️ Image Processing
-│   ├── process_image.py               (original - still works)
-│   └── process_image_v2.py            ⭐ NEW - Improved version
+│   └── process_image.py               ⭐ OCR processing
 │
 ├── 📅 Visa Slots
-│   ├── process_check_visa_slots.py    (original - still works)
-│   └── process_check_visa_slots_v2.py ⭐ NEW - Improved version
+│   └── process_check_visa_slots.py    ⭐ Visa availability checker
 │
 ├── 🚀 Main Application
-│   ├── monitor_telegram.py            (original - still works)
-│   └── monitor_telegram_v2.py         ⭐ NEW - Refactored version
+│   └── monitor_telegram.py            ⭐ Main orchestrator
 │
-├── 📚 Documentation (NEW!)
+├── 📚 Documentation
+│   ├── README.md                      - Project overview
 │   ├── OPTIMIZATION_GUIDE.md          - Architecture & design patterns
-│   ├── BEFORE_AFTER_COMPARISON.md     - What changed & why
 │   ├── QUICK_START.md                 - Usage examples
-│   └── ARCHITECTURE.txt               - This file
-│
-├── 🗑️ Legacy (still works)
-│   └── process_triggers.py            (original - for reference)
+│   ├── ARCHITECTURE.md                - This file (system design)
+│   ├── INDEX.md                       - Documentation index
+│   └── verify_setup.py                - Setup verification script
 │
 ├── 🐳 Deployment
-│   ├── Dockerfile                     (unchanged)
-│   ├── requirements.txt               (unchanged)
-│   └── .dockerignore                  (unchanged)
+│   ├── Dockerfile
+│   ├── requirements.txt
+│   └── .dockerignore
 │
-└── 📖 Project Info
+├── 💾 Backup
+│   └── .backup/                       - Original files (for reference)
+│
+└── 📖 Project Files
+    ├── LICENSE
+    ├── Dockerfile
+    └── requirements.txt
+```
     ├── README.md                      (original)
     └── LICENSE                        (unchanged)
 ```
@@ -57,7 +59,7 @@ telegram-image-ocr/
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                    monitor_telegram_v2.py                       │ ⭐ MAIN APP
+│                    monitor_telegram.py                          │ ⭐ MAIN APP
 │                      (TelegramMonitor)                          │
 └────┬──────────────────────────────────┬──────────────┬──────────┘
      │                                  │              │
@@ -75,15 +77,15 @@ telegram-image-ocr/
      │    └────────────────────────────────────┘         │        │      │
      │                                                   │        │      │
   ┌──v────────────────────────┐ ┌────────────────────┐  │  ┌─────v──┬──v──────┐
-  │  process_image_v2.py      │ │ alert_handlers.py  │◄─┤  │ Regex- │ Always- │
+  │  process_image.py         │ │ alert_handlers.py  │◄─┤  │ Regex- │ Always- │
   │ (OCR with PIL & Tesseract)│ │ (AlertHandler)     │  │  │Trigger │Trigger  │
   └───────────────────────────┘ └────────────────────┘  │  └────────┴─────────┘
                                          ▲               │
   ┌──────────────────────────────────────┴───────────────┼───────────┐
   │                                                      │           │
   │     ┌────────────────────────────┐  ┌──────────────v──────┐     │
-  │     │ process_check_visa_slots   │  │  phone_call.py      │     │
-  │     │_v2.py (VisaSlotsChecker)   │  │ (PhoneCallHandler)  │     │
+  │     │ process_check_visa_slots.py│  │  phone_call.py      │     │
+  │     │ (VisaSlotsChecker)         │  │ (PhoneCallHandler)  │     │
   │     │ - API requests via requests │  │ - DH crypto logic   │     │
   │     │ - Timezone conversion      │  │ - Telethon protocol │     │
   │     │ - Slot parsing             │  └─────────────────────┘     │
@@ -93,8 +95,7 @@ telegram-image-ocr/
 
 Legend:
   ⭐ PRIMARY ENTRY POINT (start here)
-  NEW MODULES → Better architecture
-  Original modules → Still work (backward compatible)
+  All modules optimized with type hints, docstrings, and error handling
 ```
 
 ## Module Responsibilities
@@ -148,32 +149,35 @@ Legend:
 └─────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────┐
-│                 process_image_v2.py                     │
+│                 process_image.py                        │
 │ Responsibility: Image OCR Processing                    │
 │ • Image loading (PIL)                                   │
 │ • OCR extraction (Tesseract)                            │
 │ • Image filtering                                       │
+│ • Error handling and logging                            │
 │ Size: ~70 lines                                         │
 └─────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────┐
-│             process_check_visa_slots_v2.py              │
+│             process_check_visa_slots.py                 │
 │ Responsibility: Visa Slots Availability Check           │
 │ • API requests with headers                             │
 │ • Timezone conversion (GMT to PST)                      │
 │ • Consulate slot parsing                                │
 │ • Timeout handling                                      │
+│ • Object-oriented design                                │
 │ Size: ~180 lines                                        │
 └─────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────┐
-│               monitor_telegram_v2.py                    │
+│               monitor_telegram.py                       │
 │ Responsibility: Main Application Orchestrator           │
 │ • Load configuration                                    │
 │ • Initialize components                                │
 │ • Monitor image events                                  │
 │ • Monitor visa slots                                    │
 │ • Coordinate async tasks                                │
+│ • Comprehensive error handling                          │
 │ Size: ~230 lines                                        │
 └─────────────────────────────────────────────────────────┘
 ```
@@ -189,7 +193,7 @@ Legend:
                │
                v
 ┌──────────────────────────────────────┐
-│ monitor_telegram_v2.py               │
+│ monitor_telegram.py                  │
 │ (Loads config & initializes)         │
 └──────┬─────────────────────┬─────────┘
        │                     │
@@ -201,7 +205,7 @@ Legend:
            v                    v
    ┌──────────────┐    ┌───────────────────┐
    │ process_     │    │ VisaSlotsChecker  │
-   │ image_v2.py  │    │ (API call)        │
+   │ image.py     │    │ (API call)        │
    │ (Tesseract)  │    └────────┬──────────┘
    └──────┬───────┘             │
           │                     v
@@ -283,42 +287,54 @@ TelegramMonitor
 └── monitor_visa_slots()
 ```
 
-## Feature Comparison
+## Feature Improvements
 
 ```
-FEATURE                   OLD CODE        NEW CODE
-─────────────────────────────────────────────────
-Modules                   4               8 + docs
-Module size               up to 240 lines 80-230 lines
-Type hints                0%              100%
-Docstrings               None            Complete
-Config centralization    No              Yes (config.py)
-Alert extensibility      Fixed           Pluggable
-Trigger types            1               3+
-Error handling           Basic           Comprehensive
-Logging                  Basic           Structured
-Testability              Poor            Excellent
-Backward compatibility   N/A             100%
-Phone call logic         Monolithic      Extracted
-Visa slots OOP           Functional      Object-oriented
-Main orchestrator        Functions       Classes
+FEATURE                   BEFORE          AFTER
+──────────────────────────────────────────────────
+Code Organization         Monolithic      Modular (8 modules)
+Type Hints               0%              100%
+Docstrings              None            Complete
+Config Management       Scattered       Centralized
+Alert Extensibility     Fixed           Pluggable
+Trigger Types           1               3+
+Error Handling          Basic           Comprehensive
+Logging                 Basic           Structured
+Testability             Poor            Excellent
+Phone Call Logic        Mixed           Extracted
+Visa Slots Design       Functional      Object-oriented
+Code Size              Large files      80-230 lines per module
+Backward Compatibility  N/A             100% maintained
 ```
 
-## Migration Path
+## Docker Deployment
 
-```
-CURRENT STATE
-    │
-    ├─ Option 1: Quick Replacement ──→ Copy configs & run with v2
-    │
-    ├─ Option 2: Gradual Migration ──→ Use both old & new in parallel
-    │
-    └─ Option 3: Full Refactor ──────→ Rename v2 files, update imports
-                                      Delete old files when ready
+See README.md for complete Docker instructions.
+
+**Build with Docker Buildx (Recommended):**
+```bash
+docker buildx build -t telegram-image-ocr --load .
 ```
 
-All paths lead to the same destination:
-- **Better organized code** ✅
-- **Easier to extend** ✅
-- **Easier to test** ✅
-- **Easier to maintain** ✅
+**Or with legacy builder (deprecated):**
+```bash
+docker build -t telegram-image-ocr .
+```
+
+**Run container:**
+```bash
+docker run -it \
+  -v $(pwd)/session.conf:/home/App/session.conf \
+  -v $(pwd)/trigger_configs.json:/home/App/trigger_configs.json \
+  -v $(pwd)/img:/img \
+  telegram-image-ocr
+```
+
+For advanced Docker usage (multi-platform builds, background mode, etc.), see QUICK_START.md.
+
+## Next Steps
+
+1. **Review Architecture** - Understand the modular design
+2. **Check QUICK_START.md** - See code examples
+3. **Deploy** - Use local installation or Docker
+4. **Extend** - Create custom triggers and handlers

@@ -16,9 +16,9 @@ triggers.py                     # Trigger system (regex, always patterns)
 trigger_config_loader.py        # Load configs from JSON
 phone_call.py                   # Telegram peer-to-peer calling
 alert_handlers.py               # Pluggable alert mechanisms
-process_image_v2.py             # Improved image processing
-process_check_visa_slots_v2.py  # Refactored visa slots checking
-monitor_telegram_v2.py          # Main orchestrator
+process_image.py                # Image processing with OCR
+process_check_visa_slots.py     # Visa slots availability checking
+monitor_telegram.py             # Main application orchestrator
 ```
 
 ### 2. **Configuration Management (config.py)**
@@ -105,7 +105,7 @@ handler = PhoneCallHandler(telegram_client)
 success = await handler.call_user("+1234567890")
 ```
 
-### 6. **Improved Visa Slots Checker (process_check_visa_slots_v2.py)**
+### 6. **Improved Visa Slots Checker (process_check_visa_slots.py)**
 
 **Benefits:**
 - Object-oriented design
@@ -116,13 +116,13 @@ success = await handler.call_user("+1234567890")
 
 **Example:**
 ```python
-from process_check_visa_slots_v2 import VisaSlotsChecker
+from process_check_visa_slots import VisaSlotsChecker
 
 checker = VisaSlotsChecker(consulate="MUMBAI")
 result = checker.check_slots(access_token)
 ```
 
-### 7. **Enhanced Image Processing (process_image_v2.py)**
+### 7. **Enhanced Image Processing (process_image.py)**
 
 **Benefits:**
 - Type hints
@@ -138,7 +138,7 @@ result = checker.check_slots(access_token)
 - Better error messages
 - Support for multiple trigger types
 
-### 9. **Main Orchestrator (monitor_telegram_v2.py)**
+### 9. **Main Orchestrator (monitor_telegram.py)**
 
 **Benefits:**
 - Clean separation of concerns
@@ -147,61 +147,95 @@ result = checker.check_slots(access_token)
 - Easier to test
 - Clear initialization flow
 
-## Migration Guide
+## Deployment
 
-### For Old Code Users
+### Local Installation
 
-The original files remain unchanged for backward compatibility:
+1. Install system dependencies (Tesseract)
+2. Install Python packages: `pip3 install -r requirements.txt`
+3. Configure `session.conf` and `trigger_configs.json`
+4. Run: `python3 monitor_telegram.py`
 
-- `process_triggers.py` → Still works, but `trigger_config_loader.py` + `triggers.py` recommended
-- `process_check_visa_slots.py` → Still works, but `process_check_visa_slots_v2.py` recommended
-- `process_image.py` → Still works, but `process_image_v2.py` recommended
-- `monitor_telegram.py` → Still works, but `monitor_telegram_v2.py` recommended
+### Docker Deployment
 
-### To Use New Code
-
-1. Replace imports:
-```python
-# Old
-from process_triggers import load_trigger_config
-from process_image import process_image
-
-# New
-from trigger_config_loader import load_trigger_config
-from process_image_v2 import process_image
+**Build with Docker Buildx (Recommended):**
+```bash
+docker buildx build -t telegram-image-ocr --load .
 ```
 
-2. Update main script:
-```python
-# Old
-asyncio.run(main())
-
-# New - Use TelegramMonitor class
-monitor = TelegramMonitor(api_id, api_hash, session_name, access_tokens, config_file)
-await monitor.run()
+**Or with legacy builder (deprecated):**
+```bash
+docker build -t telegram-image-ocr .
 ```
 
-## Architecture Diagram
+**Run the container:**
+```bash
+docker run -it \
+  -v $(pwd)/session.conf:/home/App/session.conf \
+  -v $(pwd)/trigger_configs.json:/home/App/trigger_configs.json \
+  -v $(pwd)/img:/img \
+  telegram-image-ocr
+```
+
+See README.md and QUICK_START.md for full Docker instructions and advanced options.
+
+## Architecture Overview
+
+### Module Dependencies
 
 ```
-monitor_telegram_v2.py (TelegramMonitor)
-    ├── trigger_config_loader.py (load configs)
-    ├── triggers.py (TriggerManager)
-    │   ├── trigger.py (Regex/Always triggers)
-    │   └── TriggerConfig
-    ├── phone_call.py (PhoneCallHandler)
-    ├── alert_handlers.py (Message/Forward handlers)
-    ├── process_image_v2.py (OCR)
-    ├── process_check_visa_slots_v2.py (VisaSlotsChecker)
-    └── config.py (Centralized config & logging)
+config.py (base layer)
+├── Used by: All modules
+└── Uses: Nothing (independent)
+
+triggers.py
+├── Uses: config.py
+└── Used by: trigger_config_loader.py, monitor_telegram.py
+
+trigger_config_loader.py
+├── Uses: config.py, triggers.py
+└── Used by: monitor_telegram.py
+
+alert_handlers.py
+├── Uses: config.py
+└── Used by: trigger_config_loader.py, monitor_telegram.py
+
+phone_call.py
+├── Uses: config.py, telethon
+└── Used by: trigger_config_loader.py, monitor_telegram.py
+
+process_image.py
+├── Uses: config.py, PIL, pytesseract
+└── Used by: monitor_telegram.py
+
+process_check_visa_slots.py
+├── Uses: config.py, requests, pytz
+└── Used by: monitor_telegram.py
+
+monitor_telegram.py (orchestrator)
+├── Uses: All above modules
+└── Entry point: Main application
+```
+
+### Data Flow
+
+```
+monitor_telegram.py (TelegramMonitor)
+├── monitor_visa_slots()
+│   └── process_check_visa_slots() → trigger_manager.process_visa_slots_triggers()
+│
+└── monitor_images()
+    ├── process_image() → trigger_manager.process_ocr_triggers()
+    │   └── alert_handlers.send_alert()
+    └── trigger_config_loader.load_trigger_config()
 ```
 
 ## Code Quality Improvements
 
 ### Type Hints
-- Added throughout new modules for clarity
+- Added throughout all modules for clarity
 - Better IDE support and autocompletion
-- Easier to catch errors
+- Easier to catch errors at development time
 
 ### Docstrings
 - Comprehensive docstrings for all public functions
@@ -227,7 +261,7 @@ Each module can now be tested independently:
 pytest triggers.py
 
 # Test visa slots checker
-pytest process_check_visa_slots_v2.py
+pytest process_check_visa_slots.py
 
 # Test alert handlers
 pytest alert_handlers.py
