@@ -26,6 +26,7 @@ pyasn1==0.4.8                # ASN.1 support for cryptography
 # ============================================================================
 Pillow==12.0.0               # Image processing library
 pytesseract==0.3.9           # Python wrapper for Tesseract OCR
+hachoir==3.3.0               # File metadata extraction library
 # Note: Tesseract must be installed separately on your system
 # macOS: brew install tesseract
 # Ubuntu/Debian: sudo apt-get install tesseract-ocr

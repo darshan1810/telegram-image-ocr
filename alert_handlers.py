@@ -64,7 +64,7 @@ class TelegramMessageHandler(AlertHandler):
 
             if photo_path:
                 try:
-                    await self.client.send_message(recipient, "Attached image:", file=photo_path)
+                    await self.client.send_file(recipient, photo_path, caption="Attached image:", force_document=False)
                 except Exception as e:
                     config.get_logger().warning(f"Failed to send photo: {repr(e)}")
 
@@ -115,7 +115,7 @@ class TelegramForwardHandler(AlertHandler):
             # Fallback to sending photo if provided
             if photo_path:
                 try:
-                    await self.client.send_message(recipient, "Attached image:", file=photo_path)
+                    await self.client.send_file(recipient, photo_path, caption="Attached image:", force_document=False)
                     return True
                 except Exception as fallback_e:
                     config.get_logger().warning(f"Fallback also failed: {repr(fallback_e)}")
