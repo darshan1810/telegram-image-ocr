@@ -190,8 +190,19 @@ async def main():
             )
             access_tokens = conf.get('access_tokens', [])
 
-            if not all([api_id, api_hash, session_name, access_tokens]):
-                raise ValueError("Missing required configuration fields")
+            missing_fields = []
+            if not api_id:
+                missing_fields.append("api_id")
+            if not api_hash:
+                missing_fields.append("api_hash")
+            if not session_name:
+                missing_fields.append("session_name")
+            
+            if missing_fields:
+                raise ValueError(
+                    f"Missing required configuration fields: {', '.join(missing_fields)}. "
+                    f"Please update {config.DEFAULT_SESSION_CONFIG_FILE}"
+                )
 
     except FileNotFoundError:
         logger.error(
