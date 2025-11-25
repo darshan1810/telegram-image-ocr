@@ -2,6 +2,14 @@
 Image processing module for OCR text extraction.
 """
 from typing import Optional
+import sys
+
+# Fix for Python 3.14 compatibility - pytesseract uses deprecated pkgutil.find_loader
+if sys.version_info >= (3, 12):
+    import pkgutil
+    if not hasattr(pkgutil, 'find_loader'):
+        # Create a no-op find_loader for backward compatibility
+        pkgutil.find_loader = lambda x: None
 
 import pytesseract
 from PIL import Image, ImageFilter

@@ -13,8 +13,8 @@ from telethon import TelegramClient, events
 # Import new modular components
 import config
 from trigger_config_loader import load_trigger_config
-from process_image_v2 import process_image
-from process_check_visa_slots_v2 import process_check_visa_slots, VisaSlotsChecker
+from process_image import process_image
+from process_check_visa_slots import process_check_visa_slots, VisaSlotsChecker
 from phone_call import PhoneCallHandler
 from alert_handlers import TelegramMessageHandler
 from triggers import TriggerManager
