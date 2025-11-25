@@ -9,7 +9,7 @@
 
 # Core Telegram & Networking
 # ============================================================================
-Telethon==1.36.0              # Telegram client library for async operations
+Telethon==1.42.0             # Telegram client library for async operations
 requests==2.31.0             # HTTP library for API calls
 certifi==2023.7.22           # SSL certificates verification
 urllib3==1.26.17             # HTTP client with connection pooling
@@ -24,7 +24,7 @@ pyasn1==0.4.8                # ASN.1 support for cryptography
 
 # Image Processing & OCR
 # ============================================================================
-Pillow==10.2.0               # Image processing library
+Pillow==12.0.0               # Image processing library
 pytesseract==0.3.9           # Python wrapper for Tesseract OCR
 # Note: Tesseract must be installed separately on your system
 # macOS: brew install tesseract
