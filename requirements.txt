@@ -1,17 +1,47 @@
-autopep8==1.6.0
-certifi==2023.7.22
-charset-normalizer==2.0.12
-idna==3.3
-packaging==21.3
-pillow==10.2.0
-pyaes==1.6.1
-pyasn1==0.4.8
-pycodestyle==2.8.0
-pyparsing==3.0.9
-pytesseract==0.3.9
-pytz==2024.1
-requests==2.31.0
-rsa==4.8
-Telethon==1.36.0
-toml==0.10.2
-urllib3==1.26.17
+# ============================================================================
+# telegram-image-ocr - Python Dependencies
+# 
+# This project uses Telethon for Telegram API access, OCR for image
+# processing, and various utilities for networking and data handling.
+# 
+# Python 3.7+ required
+# ============================================================================
+
+# Core Telegram & Networking
+# ============================================================================
+Telethon==1.36.0              # Telegram client library for async operations
+requests==2.31.0             # HTTP library for API calls
+certifi==2023.7.22           # SSL certificates verification
+urllib3==1.26.17             # HTTP client with connection pooling
+charset-normalizer==2.0.12   # Character encoding detection
+idna==3.3                    # Internationalized domain names
+
+# Cryptography & Security
+# ============================================================================
+pyaes==1.6.1                 # AES encryption (used by Telethon)
+rsa==4.8                     # RSA cryptography (used by Telethon)
+pyasn1==0.4.8                # ASN.1 support for cryptography
+
+# Image Processing & OCR
+# ============================================================================
+Pillow==10.2.0               # Image processing library
+pytesseract==0.3.9           # Python wrapper for Tesseract OCR
+# Note: Tesseract must be installed separately on your system
+# macOS: brew install tesseract
+# Ubuntu/Debian: sudo apt-get install tesseract-ocr
+# Windows: Download from https://github.com/UB-Mannheim/tesseract/wiki
+
+# Timezone & Date/Time
+# ============================================================================
+pytz==2024.1                 # Timezone library for UTC/PST conversions
+
+# Code Quality & Formatting (Optional - for development)
+# ============================================================================
+autopep8==1.6.0              # Auto-formatter for Python code
+pycodestyle==2.8.0           # Python style guide checker
+
+# Utilities
+# ============================================================================
+packaging==21.3              # Package version handling
+pyparsing==3.0.9             # Parsing library
+toml==0.10.2                 # TOML file parsing
