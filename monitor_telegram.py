@@ -117,6 +117,12 @@ class TelegramMonitor:
 
     async def monitor_visa_slots(self) -> None:
         """Periodically check for available visa slots."""
+        if not self.access_tokens:
+            self.logger.info(
+                "Skipping visa slots monitoring because access_tokens is empty"
+            )
+            return
+
         # Wait for client to connect
         await asyncio.sleep(config.TELEGRAM_STARTUP_DELAY)
 
@@ -159,14 +165,21 @@ class TelegramMonitor:
 
             # Connect and run
             async with self.client:
-                # Start background visa slots monitoring
-                visa_monitor_task = asyncio.create_task(self.monitor_visa_slots())
+                visa_monitor_task = None
+
+                if self.access_tokens:
+                    visa_monitor_task = asyncio.create_task(self.monitor_visa_slots())
+                else:
+                    self.logger.info(
+                        "Visa slots monitoring disabled because access_tokens is empty"
+                    )
 
                 try:
                     # Run main image monitoring loop
                     await self.monitor_images()
                 finally:
-                    visa_monitor_task.cancel()
+                    if visa_monitor_task:
+                        visa_monitor_task.cancel()
 
         except Exception as e:
             self.logger.error(f"Monitor error: {repr(e)}")
