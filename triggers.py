@@ -147,15 +147,25 @@ class TriggerManager:
                     logger.info(f"OCR trigger matched for {config_item.name}")
 
                     if config_item.enable_message:
-                        await self.message_handler.send_alert(
+                        message_sent = await self.message_handler.send_alert(
                             config_item.user_number,
                             f"Hello {config_item.name}!",
                             config.VISA_ALERT_MESSAGE,
                             photo_path
                         )
+                        if not message_sent:
+                            logger.error(
+                                f"Failed to send OCR alert message to {config_item.user_number} "
+                                f"for {config_item.name}. See handler logs for details."
+                            )
 
                     if config_item.enable_call:
-                        await self.call_handler.call_user(config_item.user_number)
+                        call_placed = await self.call_handler.call_user(config_item.user_number)
+                        if not call_placed:
+                            logger.error(
+                                f"Failed to place OCR alert call to {config_item.user_number} "
+                                f"for {config_item.name}. See handler logs for details."
+                            )
             except Exception as e:
                 logger.warning(f"Error processing OCR trigger for {config_item.name}: {repr(e)}")
 
@@ -185,10 +195,15 @@ class TriggerManager:
                     logger.info(f"Visa slots trigger matched for {config_item.name}")
 
                     message = f"Hello {config_item.name}! {config.VISA_ALERT_MESSAGE}\nSource checkvisaslots.com:\n{slots_message}"
-                    await self.message_handler.send_alert(
+                    message_sent = await self.message_handler.send_alert(
                         config_item.user_number,
                         "",
                         message
                     )
+                    if not message_sent:
+                        logger.error(
+                            f"Failed to send visa slots alert message to {config_item.user_number} "
+                            f"for {config_item.name}. See handler logs for details."
+                        )
             except Exception as e:
                 logger.warning(f"Error processing visa slots trigger for {config_item.name}: {repr(e)}")

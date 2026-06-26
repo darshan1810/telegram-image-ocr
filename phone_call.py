@@ -117,5 +117,7 @@ class PhoneCallHandler:
             )
             return True
         except Exception as e:
-            config.get_logger().warning(f"Failed to initiate phone call: {repr(e)}")
+            config.get_logger().exception(
+                f"Failed to initiate phone call to {user_number}: {repr(e)}"
+            )
             return False
