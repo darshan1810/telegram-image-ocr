@@ -1,6 +1,7 @@
 """
 Phone call handling module using Telegram's peer-to-peer calling protocol.
 """
+import asyncio
 import hashlib
 import os
 import random
@@ -24,6 +25,7 @@ class PhoneCallHandler:
             telegram_client: Telethon TelegramClient instance
         """
         self.client = telegram_client
+        self._call_lock = asyncio.Lock()
 
     async def _get_dh_config(self):
         """
@@ -78,46 +80,50 @@ class PhoneCallHandler:
         """
         Initiate a phone call to a user.
         
+        Phone calls are serialized using a lock to prevent concurrent call issues
+        with Telethon's phone call protocol.
+        
         Args:
             user_number: Telegram phone number or user ID
             
         Returns:
             True if call initiated successfully, False otherwise
         """
-        try:
-            dh_config = await self._get_dh_config()
+        async with self._call_lock:
+            try:
+                dh_config = await self._get_dh_config()
 
-            # Generate random 'a' value: 1 < a < p-1
-            a = 0
-            while not (1 < a < dh_config.p - 1):
-                a = int.from_bytes(self._get_random_bytes(dh_config), 'little')
+                # Generate random 'a' value: 1 < a < p-1
+                a = 0
+                while not (1 < a < dh_config.p - 1):
+                    a = int.from_bytes(self._get_random_bytes(dh_config), 'little')
 
-            # Calculate g^a mod p
-            g_a = pow(dh_config.g, a, dh_config.p)
+                # Calculate g^a mod p
+                g_a = pow(dh_config.g, a, dh_config.p)
 
-            # Get user entity
-            user = await self.client.get_input_entity(user_number)
+                # Get user entity
+                user = await self.client.get_input_entity(user_number)
 
-            # Create phone call protocol
-            protocol = PhoneCallProtocol(
-                min_layer=config.PHONE_CALL_PROTOCOL_VERSION,
-                max_layer=config.PHONE_CALL_PROTOCOL_VERSION,
-                udp_p2p=True,
-                library_versions=[config.PHONE_CALL_LIBRARY_VERSION]
-            )
-
-            # Request call
-            await self.client(
-                RequestCallRequest(
-                    user_id=user,
-                    random_id=random.randint(0, 0x7fffffff - 1),
-                    g_a_hash=hashlib.sha256(self._integer_to_bytes(g_a)).digest(),
-                    protocol=protocol
+                # Create phone call protocol
+                protocol = PhoneCallProtocol(
+                    min_layer=config.PHONE_CALL_PROTOCOL_VERSION,
+                    max_layer=config.PHONE_CALL_PROTOCOL_VERSION,
+                    udp_p2p=True,
+                    library_versions=[config.PHONE_CALL_LIBRARY_VERSION]
                 )
-            )
-            return True
-        except Exception as e:
-            config.get_logger().exception(
-                f"Failed to initiate phone call to {user_number}: {repr(e)}"
-            )
-            return False
+
+                # Request call
+                await self.client(
+                    RequestCallRequest(
+                        user_id=user,
+                        g_a_hash=hashlib.sha256(self._integer_to_bytes(g_a)).digest(),
+                        protocol=protocol,
+                        random_id=random.randint(0, 0x7fffffff - 1)
+                    )
+                )
+                return True
+            except Exception as e:
+                config.get_logger().exception(
+                    f"Failed to initiate phone call to {user_number}: {repr(e)}"
+                )
+                return False
